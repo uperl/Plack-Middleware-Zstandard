@@ -107,6 +107,32 @@ subtest 'basic' => sub {
 
   };
 
+  subtest 'do not clobber' => sub {
+
+    my $content = 'Hello World';
+    local @res = (
+      200, [
+        'Content-Type' => 'text/plain',
+        'Content-ENcoding' => 'foo',
+      ], [
+        $content
+      ]
+    );
+
+    req(
+      GET('/', 'Accept-Encoding' => 'zstd'),
+      res {
+        code 200;
+        header 'Content-Encoding' => 'foo';
+        header 'Vary', 'Accept-Encoding';
+        call content => 'Hello World';
+      },
+    );
+
+    note_debug();
+
+  };
+
   subtest 'No accept' => sub {
 
     my $content = 'Hello World';
