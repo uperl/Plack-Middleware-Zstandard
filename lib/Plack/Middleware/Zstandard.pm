@@ -43,9 +43,9 @@ package Plack::Middleware::Zstandard {
         $res->[2] = \@buf;
         return undef;
       } else {
-        return sub ($content) {
+        return sub ($chunk) {
           # TODO: what about end?
-          return $compressor->compress($content);
+          return $compressor->compress($chunk);
         };
       }
     });
