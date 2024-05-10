@@ -8,7 +8,7 @@ package Plack::Middleware::Zstandard {
 
   use parent qw( Plack::Middleware );
   use Plack::Util ();
-  use Ref::Util qw( is_arrayref );
+  use Ref::Util qw( is_plain_arrayref );
   use Compress::Stream::Zstd::Compressor ();
 
   sub prepare_app ($self) {
@@ -36,16 +36,22 @@ package Plack::Middleware::Zstandard {
 
       my $compressor = Compress::Stream::Zstd::Compressor->new;
 
-      if($res->[2] && is_arrayref $res->[2]) {
-        my @buf = grep length, map { $compressor->compress($_) } grep defined, $res->[2]->@*;
+      if($res->[2] && is_plain_arrayref $res->[2]) {
+        $res->[2] = [grep length, map { $compressor->compress($_) } grep defined, $res->[2]->@*];
         my $end = $compressor->end;
-        push @buf, $end if length $end;
-        $res->[2] = \@buf;
+        push $res->[2]->@*, $end if length $end;
         return undef;
       } else {
         return sub ($chunk) {
-          # TODO: what about end?
-          return $compressor->compress($chunk);
+          if(defined $chunk) {
+            return $compressor->compress($chunk);
+          } elsif(defined $compressor) {
+            my $end = $compressor->end;
+            undef $compressor;
+            return $end;
+          } else {
+            return undef;
+          }
         };
       }
     });
