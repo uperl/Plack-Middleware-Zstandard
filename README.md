@@ -2,6 +2,30 @@
 
 Compress response body with Zstandard
 
+# SYNOPSIS
+
+```perl
+use Plack::Builder;
+
+my $app = sub {
+  return [
+    200,
+    [ 'Content-Type' => 'text/plain' ],
+    [ "Hello World!\n" ],
+  ];
+};
+
+builder {
+  enable 'Zstandard';
+  $app;
+};
+```
+
+# DESCRIPTION
+
+This middleware encodes the body of the response using Zstandard, based on the `Accept-Encoding`
+request header.
+
 # AUTHOR
 
 Graham Ollis <plicease@cpan.org>

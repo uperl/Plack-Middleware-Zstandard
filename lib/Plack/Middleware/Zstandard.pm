@@ -60,3 +60,14 @@ package Plack::Middleware::Zstandard {
 }
 
 1;
+
+=head1 SYNOPSIS
+
+# EXAMPLE: examples/app.psgi
+
+=head1 DESCRIPTION
+
+This middleware encodes the body of the response using Zstandard, based on the C<Accept-Encoding>
+request header.
+
+=cut
