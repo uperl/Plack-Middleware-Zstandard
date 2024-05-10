@@ -6,12 +6,15 @@ use Compress::Stream::Zstd::Decompressor;
 
 subtest 'basic' => sub {
 
-  my $content = 'Hello World';
+  my @res;
 
   my $app = psgi_app_guard builder {
     enable 'Zstandard';
-    sub { [200, [ 'Content-Type' => 'text/plain', 'Content-Length' => length($content) ], [ $content ]] };
+    sub { return \@res };
   };
+
+  my $content = 'Hello World';
+  @res = ( 200, [ 'Content-Type' => 'text/plain', 'Content-Length' => length($content) ], [ $content ] );
 
   req(
     GET('/', 'Accept-Encoding' => 'zstd'),
@@ -31,6 +34,10 @@ subtest 'basic' => sub {
   );
 
 };
+
+sub note_debug {
+  note $_ for map { $_->as_string} (tx->req, tx->res);
+}
 
 sub decompress {
   note $_ for map { $_->as_string} (tx->req, tx->res->headers);
