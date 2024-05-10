@@ -29,6 +29,9 @@ package Plack::Middleware::Zstandard {
       push @vary, 'Accept-Encoding';
       $h->set('Vary' => join(",", @vary));
 
+      # Do not clobber already existing encoding
+      return if $h->exists('Content-Encoding') && $h->get('Content-Encoding') ne 'identity';
+
       return undef unless ($env->{HTTP_ACCEPT_ENCODING} // '') =~ /\bzstd\b/;
 
       $h->set('Content-Encoding' => 'zstd');
