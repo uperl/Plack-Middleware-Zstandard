@@ -1,4 +1,5 @@
 use Test2::V0 -no_srand => 1;
+use experimental qw( signatures );
 use Plack::Builder;
 use Test2::Tools::HTTP qw( :short psgi_app_guard );
 use HTTP::Request::Common;
@@ -183,6 +184,81 @@ subtest 'basic' => sub {
       'content',
     );
 
+  };
+
+};
+
+subtest 'level' => sub {
+
+  my @last_new_args;
+  my $mock = mock 'Compress::Stream::Zstd::Compressor' => (
+    before => [
+      new => sub ($class, @args) {
+        @last_new_args = @args;
+      },
+    ],
+  );
+
+  subtest 'override level = 22' => sub {
+
+    my $app = psgi_app_guard builder {
+      enable 'Zstandard', level => 22;
+      sub { return [ 200, ['Content-Type' => 'text/plain'], ['Hello World']] };
+    };
+
+    req(
+      GET('/', 'Accept-Encoding' => 'zstd'),
+      res {
+        code 200;
+        content_type 'text/plain';
+        header 'Content-Length' => DNE();
+        header 'Content-Encoding' => 'zstd';
+        header 'Vary', 'Accept-Encoding';
+      },
+    );
+
+    is(
+      decompress(),
+      'Hello World',
+      'content',
+    );
+
+    is(
+      \@last_new_args,
+      [22],
+      'expected args',
+    );
+  };
+
+  subtest 'default' => sub {
+
+    my $app = psgi_app_guard builder {
+      enable 'Zstandard';
+      sub { return [ 200, ['Content-Type' => 'text/plain'], ['Hello World']] };
+    };
+
+    req(
+      GET('/', 'Accept-Encoding' => 'zstd'),
+      res {
+        code 200;
+        content_type 'text/plain';
+        header 'Content-Length' => DNE();
+        header 'Content-Encoding' => 'zstd';
+        header 'Vary', 'Accept-Encoding';
+      },
+    );
+
+    is(
+      decompress(),
+      'Hello World',
+      'content',
+    );
+
+    is(
+      \@last_new_args,
+      [],
+      'expected args',
+    );
   };
 
 };

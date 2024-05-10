@@ -17,6 +17,7 @@ $modules{$_} = $_ for qw(
   Plack::Builder
   Plack::Middleware
   Plack::Util
+  Plack::Util::Accessor
   Ref::Util
   Test2::Tools::HTTP
   Test2::V0
