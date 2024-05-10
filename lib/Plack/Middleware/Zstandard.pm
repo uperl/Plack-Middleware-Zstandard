@@ -8,10 +8,16 @@ package Plack::Middleware::Zstandard {
 
   use parent qw( Plack::Middleware );
   use Plack::Util ();
+  use Plack::Util::Accessor qw( level _constructor_args );
   use Ref::Util qw( is_plain_arrayref );
   use Compress::Stream::Zstd::Compressor ();
 
   sub prepare_app ($self) {
+    if(defined $self->level) {
+      $self->_constructor_args([$self->level]);
+    } else {
+      $self->_constructor_args([]);
+    }
   }
 
   sub call ($self, $env) {
@@ -37,7 +43,7 @@ package Plack::Middleware::Zstandard {
       $h->set('Content-Encoding' => 'zstd');
       $h->remove('Content-Length');
 
-      my $compressor = Compress::Stream::Zstd::Compressor->new;
+      my $compressor = Compress::Stream::Zstd::Compressor->new($self->_constructor_args->@*);
 
       if($res->[2] && is_plain_arrayref $res->[2]) {
         $res->[2] = [grep length, map { $compressor->compress($_) } grep defined, $res->[2]->@*];
@@ -72,5 +78,26 @@ package Plack::Middleware::Zstandard {
 
 This middleware encodes the body of the response using Zstandard, based on the C<Accept-Encoding>
 request header.
+
+=head1 CONFIGURATION
+
+=over 4
+
+=item level
+
+Compression level.  Should be an integer from 1 to 22.  If not provided, then the default will
+be chosen by L<Compress::Stream::Zstd>.
+
+=back
+
+=head1 SEE ALSO
+
+=over 4
+
+=item L<Plack::Middleware::Deflater>
+
+=item L<Compress::Stream::Zstd>
+
+=back
 
 =cut

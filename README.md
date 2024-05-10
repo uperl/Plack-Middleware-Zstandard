@@ -26,6 +26,18 @@ builder {
 This middleware encodes the body of the response using Zstandard, based on the `Accept-Encoding`
 request header.
 
+# CONFIGURATION
+
+- level
+
+    Compression level.  Should be an integer from 1 to 22.  If not provided, then the default will
+    be chosen by [Compress::Stream::Zstd](https://metacpan.org/pod/Compress::Stream::Zstd).
+
+# SEE ALSO
+
+- [Plack::Middleware::Deflater](https://metacpan.org/pod/Plack::Middleware::Deflater)
+- [Compress::Stream::Zstd](https://metacpan.org/pod/Compress::Stream::Zstd)
+
 # AUTHOR
 
 Graham Ollis <plicease@cpan.org>
