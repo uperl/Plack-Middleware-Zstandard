@@ -40,7 +40,7 @@ subtest 'basic' => sub {
   subtest 'short string as array' => sub {
 
     my @content = ('Hello', undef, ' ', 'World');
-    local @res = ( 200, [ 'Content-Type' => 'text/plain', 'Content-Length' => length(join '', @content) ], [ @content ] );
+    local @res = ( 200, [ 'Content-Type' => 'text/plain', 'Content-Length' => length(join '', grep defined, @content) ], [ @content ] );
 
     req(
       GET('/', 'Accept-Encoding' => 'zstd'),
