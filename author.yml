@@ -8,6 +8,7 @@ pod_spelling_system:
   stopwords:
     - Zstandard
     - ing
+    - vary'ing
 
 pod_coverage:
   skip: 0
