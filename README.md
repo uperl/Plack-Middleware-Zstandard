@@ -33,6 +33,12 @@ request header.
     Compression level.  Should be an integer from 1 to 22.  If not provided, then the default will
     be chosen by [Compress::Stream::Zstd](https://metacpan.org/pod/Compress::Stream::Zstd).
 
+- vary
+
+    If set to true (the default), then the response will vary on `Content-Encoding`.  This is usually
+    what you want, but if you have another middleware or application that is already vary'ing on that
+    header, you may want to set this to false.
+
 # SEE ALSO
 
 - [Plack::Middleware::Deflater](https://metacpan.org/pod/Plack::Middleware::Deflater)
