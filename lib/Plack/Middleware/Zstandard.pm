@@ -8,7 +8,7 @@ package Plack::Middleware::Zstandard {
 
   use parent qw( Plack::Middleware );
   use Plack::Util ();
-  use Plack::Util::Accessor qw( level _constructor_args );
+  use Plack::Util::Accessor qw( level _constructor_args vary );
   use Ref::Util qw( is_plain_arrayref );
   use Compress::Stream::Zstd::Compressor ();
 
@@ -31,9 +31,11 @@ package Plack::Middleware::Zstandard {
       return undef if Plack::Util::status_with_no_entity_body($res->[0]);
       return undef if $h->exists('Cache-Control') && $h->get('Cache-Control') =~ /\bno-transform\b/;
 
-      my @vary = split /\s*,\s*/, ($h->get('Vary') || '');
-      push @vary, 'Accept-Encoding';
-      $h->set('Vary' => join(",", @vary));
+      if($self->vary // 1) {
+        my @vary = split /\s*,\s*/, ($h->get('Vary') || '');
+        push @vary, 'Accept-Encoding';
+        $h->set('Vary' => join(",", @vary));
+      }
 
       # Do not clobber already existing encoding
       return if $h->exists('Content-Encoding') && $h->get('Content-Encoding') ne 'identity';
@@ -87,6 +89,12 @@ request header.
 
 Compression level.  Should be an integer from 1 to 22.  If not provided, then the default will
 be chosen by L<Compress::Stream::Zstd>.
+
+=item vary
+
+If set to true (the default), then the response will vary on C<Content-Encoding>.  This is usually
+what you want, but if you have another middleware or application that is already vary'ing on that
+header, you may want to set this to false.
 
 =back
 

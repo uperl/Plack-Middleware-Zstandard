@@ -260,7 +260,35 @@ subtest 'level' => sub {
       'expected args',
     );
   };
+};
 
+subtest 'vary' => sub {
+
+  subtest 'do not vary' => sub {
+
+    my $app = psgi_app_guard builder {
+      enable 'Zstandard', vary => 0;
+      sub { return [ 200, ['Content-Type' => 'text/plain'], ['Hello World']] };
+    };
+
+    req(
+      GET('/', 'Accept-Encoding' => 'zstd'),
+      res {
+        code 200;
+        content_type 'text/plain';
+        header 'Content-Length' => DNE();
+        header 'Content-Encoding' => 'zstd';
+        header 'Vary', DNE();
+      },
+    );
+
+    is(
+      decompress(),
+      'Hello World',
+      'content',
+    );
+
+  };
 };
 
 sub note_debug {
